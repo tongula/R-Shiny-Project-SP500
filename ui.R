@@ -12,23 +12,16 @@ dashboardPage(
   dashboardHeader(title = "S&P 500 Fundemantal Analysis"),
   dashboardSidebar(
     
-    sidebarUserPanel("NYC DSA",
-                     image = "https://yt3.ggpht.com/-04uuTMHfDz4/AAAAAAAAAAI/AAAAAAAAAAA/Kjeupp-eNNg/s100-c-k-no-rj-c0xffffff/photo.jpg"),
+    sidebarUserPanel("Tong Xu"),
+                     #image = "https://yt3.ggpht.com/-04uuTMHfDz4/AAAAAAAAAAI/AAAAAAAAAAA/Kjeupp-eNNg/s100-c-k-no-rj-c0xffffff/photo.jpg"),
     sidebarMenu(
       menuItem("Stock", tabName = "stock", icon = icon("dollar")),
       menuItem("HeatMap", tabName = "heatmap", icon = icon("map")),
       menuItem("Median", tabName = "median", icon = icon("calculator")),
       menuItem("Data", tabName = "data", icon = icon("database"))
-    ),
+    )
   
-    selectizeInput(inputId = "sector",
-                   label = "Select Sector(s)",
-                   choices = unique(stock_data[, GICS.Sector]), multiple=TRUE,
-                   selected = 'Health Care'),
-    selectizeInput(inputId = "year",
-                   label = "Select year",
-                   choices = unique(stock_data[, For.Year]),
-                   selected = 2015)
+    
   ),
   dashboardBody(
     # tags$head(
@@ -37,6 +30,7 @@ dashboardPage(
     tabItems(
       
       tabItem(tabName = "stock",
+              #Nedd to add this fluidRow before adding tabBox
               fluidRow(
                 tabBox(
                   title = "Stock",
@@ -48,13 +42,13 @@ dashboardPage(
                                             label = "View by Sector/State/Country",
                                             choices = c("GICS.Sector","State","Country"), multiple=FALSE,
                                             selected = "GICS.Sector")
-                                   ),
-                             column(6,
-                               selectizeInput(inputId = "option2",
-                                              label = "View by Sector/State/Country",
-                                              choices = c("GICS.Sector","State","Country"), multiple=FALSE,
-                                              selected = "GICS.Sector")
-                             )
+                                   )
+                             #column(6,
+                             # selectizeInput(inputId = "option2",
+                             #                 label = "View by Sector/State/Country",
+                             #                  choices = c("GICS.Sector","State","Country"), multiple=FALSE,
+                             #                  selected = "GICS.Sector")
+                             #)
                              
                            
                   ),
@@ -69,7 +63,7 @@ dashboardPage(
                              column(6,
                                     selectizeInput(inputId = "option3",
                                                    label = "Choose Year",
-                                                   choices = c(2013,2014,2015,2016), multiple=FALSE,
+                                                   choices = c(2012,2013,2014,2015,2016), multiple=FALSE,
                                                    selected = 2016)
                              )
                              
@@ -101,30 +95,98 @@ dashboardPage(
       ),
       tabItem(tabName = "median",
               fluidRow(
-                column(6,
-                       selectizeInput(inputId = "ratio",
-                                      label = "Select Factor",
-                                      choices = c("PE","market_cap","Price","leverage","Debt_to_EBITDA","Total.Revenue","Total.Liabilities","Capital.Expenditures","Cash.and.Cash.Equivalents","Earnings.Before.Interest.and.Tax","Gross.Profit","Net.Cash.Flow.Operating","Net.Income","Operating.Income","Profit.Margin","R.and.D","SGA"), 
-                                      multiple=FALSE,
-                                      selected = 'Total.Revenue')
-                )),
-              fluidRow(plotlyOutput("boxplot"), width = 12),
-              fluidRow(plotlyOutput("display"), width = 12)),
-      
+                tabBox(
+                  title = "Analysis",
+                  id = "tabset2", height = "220px", width = "12",
+              tabPanel("Detail",
+                       fluidRow(
+                         column(4,
+                                selectizeInput(inputId = "ratio",
+                                               label = "Select Y Factor",
+                                               choices = c("PE","market_cap","Price","leverage","Total.Revenue","Total.Liabilities","Capital.Expenditures","Cash.and.Cash.Equivalents","Net.Cash.Flow.Operating","Net.Income","Profit.Margin","R.and.D"), 
+                                               multiple=FALSE,
+                                               selected = 'Total.Revenue')
+                         ),
+                         column(4,
+                                selectizeInput(inputId = "year",
+                                               label = "Select year",
+                                               choices = c(2012,2013,2014,2015,2016),
+                                               selected = 2015)
+                         )),
+                       
+                       fluidRow(plotlyOutput("boxplot"), width = 12),
+                       
+                       fluidRow(
+                         column(4,
+                                selectizeInput(inputId = "sector",
+                                               label = "Select Sector(s)",
+                                               choices = unique(as.character(stock_data$GICS.Sector)), multiple=TRUE,
+                                               selected = 'Health Care')
+                         ),
+                         column(4,
+                                selectizeInput(inputId = "ratio2",
+                                               label = "Select X Factor",
+                                               choices = c("PE","market_cap","Price"), 
+                                               multiple=FALSE,
+                                               selected = 'PE')
+                         )),
+                       
+                       fluidRow(plotlyOutput("display"), width = 12)
+                       ),
+              tabPanel("Summary",
+                       fluidRow(
+                         column(4,
+                                selectizeInput(inputId = "ratio11",
+                                               label = "Select Factor",
+                                               choices = c("PE","market_cap","Price","leverage","Total.Revenue","Total.Liabilities","Capital.Expenditures","Cash.and.Cash.Equivalents","Net.Cash.Flow.Operating","Net.Income","Profit.Margin","R.and.D"), 
+                                               multiple=FALSE,
+                                               selected = 'Total.Revenue')
+                         ),
+                         column(4,
+                                selectizeInput(inputId = "sector11",
+                                               label = "Select Sector(s)",
+                                               choices = unique(as.character(stock_data$GICS.Sector)), multiple=TRUE,
+                                               selected = 'Health Care')
+                         )),
+                       
+                       fluidRow(plotlyOutput("lineplot1"), width = 12)),
+                       fluidRow(tableOutput("table11"), width = 12))
+                       
+                      #  fluidRow(
+                      #    column(4,
+                      #           selectizeInput(inputId = "sector22",
+                      #                          label = "Select Sector(s)",
+                      #                          choices = unique(as.character(stock_data$GICS.Sector)), multiple=FALSE,
+                      #                          selected = 'Health Care')
+                      #    ),
+                      #    column(4,
+                      #           selectizeInput(inputId = "ratio22",
+                      #                          label = "Select Factor",
+                      #                          choices = c("PE","market_cap","Price","leverage","Total.Revenue","Total.Liabilities","Capital.Expenditures","Cash.and.Cash.Equivalents","Net.Cash.Flow.Operating","Net.Income","Profit.Margin","R.and.D"), 
+                      #                          multiple=TRUE,
+                      #                          selected = 'PE')
+                      #    )),
+                      #  
+                      # fluidRow(plotlyOutput("lineplot2"), width = 12)
+                      #  )
+      )),
       
       tabItem(tabName = "data",
               fluidRow(
-                column(6,
+                column(4,
                        selectInput("sector1",
                                    "Sector:",
                                    c("All",
                                      unique(as.character(stock_data$GICS.Sector))))
                 ),
-                column(6,
+                column(4,
                        selectInput("year1",
                                    "Year:",
                                    c("All",
                                      c(2013,2014,2015,2016)))
+                ),
+                column(4,
+                       downloadButton("downloadData", "Download")
                 )
                 
               ),

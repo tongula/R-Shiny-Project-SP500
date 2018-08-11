@@ -16,7 +16,7 @@ new_securities<-read.table("C:\\Users\\XuT\\Desktop\\DS\\shiny project data\\sp5
 new_securities$For.Year = "Current"
   
 
-shinyServer(function(input, output){
+shinyServer(function(input, output, session){
   
   #data part
   counttable_geo= reactive({
@@ -27,7 +27,7 @@ shinyServer(function(input, output){
   
   counttable_marketcap= reactive({
     new_securities %>%
-    group_by_(input$option2) %>%
+    group_by_(input$option1) %>%
     summarise(MarketCap=sum(marketcap)/1000000000)
   })
   
@@ -107,7 +107,9 @@ shinyServer(function(input, output){
            Profit.Margin,
            R.and.D = R.and.D/1000000)
   
-  corr_ratiotable = selectedratiotable %>%
+  corr_ratiotable = reactive({
+    selectedratiotable %>%
+      filter(GICS.Sector==input$option4) %>%
       select(Z.PE=PE,
            Z.market_cap=market_cap,
            Z.Price=Price,
@@ -120,6 +122,7 @@ shinyServer(function(input, output){
            Net.Income,
            Profit.Margin,
            R.and.D)
+  })
   
   ratiotable1 = selectedratiotable %>%
     select(PE,
@@ -154,8 +157,8 @@ shinyServer(function(input, output){
   name_corr = c("Z.PE","Z.market_cap","Z.Price","leverage","Total.Revenue","Total.Liabilities","Capital.Expenditures","Cash.and.Cash.Equivalents","Net.Cash.Flow.Operating","Net.Income","Profit.Margin","R.and.D")
   
   output$heat <- renderPlotly({
-    plot_ly(x = name_corr, y = name_corr, z = round(cor(corr_ratiotable,method = "spearman"), 3), 
-            key = round(cor(corr_ratiotable,method = "spearman"), 3), type = "heatmap", source = "heatplot") %>%
+    plot_ly(x = name_corr, y = name_corr, z = round(cor(corr_ratiotable(), method = "spearman"), 3), 
+            key = round(cor(corr_ratiotable(),method = "spearman"), 3), type = "heatmap", source = "heatplot") %>%
       layout(xaxis = list(title = ""), 
              yaxis = list(title = ""))
   })
@@ -174,7 +177,7 @@ shinyServer(function(input, output){
     s <- event_data("plotly_click", source = "heatplot")
     if (length(s)) {
       vars <- c(s[["x"]], s[["y"]])
-      d <- setNames(corr_ratiotable[vars], c("x", "y"))
+      d <- setNames(corr_ratiotable()[vars], c("x", "y"))
       yhat <- fitted(lm(y ~ x, data = d))
       plot_ly(d, x = ~x) %>%
         add_markers(y = ~y) %>%
@@ -188,19 +191,9 @@ shinyServer(function(input, output){
   })
 
   
-  temp_data = reactive({
-    ratiotable2 %>%
-      select(Security,GICS.Sector,For.Year,PE,Total.Revenue) %>%
-      filter((For.Year==input$year) & (GICS.Sector==input$sector))
-    #& (Revenue<100) & (PE<50) & (PE>-10)
-  })
-   
-  output$display <- renderPlotly({
-    plot_ly(temp_data(), x = ~PE, y = ~Total.Revenue, color = ~GICS.Sector,text = ~Security, type = "scatter")
-    })
-  
+
   #box plot
-  
+
   #remove outlier
   #remove_outliers <- function(x, na.rm = TRUE, ...) {
    # qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
@@ -211,11 +204,13 @@ shinyServer(function(input, output){
    # y
   #}
   
+  # ratiotable3 = ratiotable2 %>%
+  #   mutate(For.Year=as.character(For.Year))
   
   graph_data_2 = reactive ({
     ratiotable2 %>%
     select(Security, GICS.Sector,For.Year,input$ratio) %>%
-      filter(For.Year==input$year)
+      filter(For.Year == input$year)
   })
     
 #filter((For.Year==input$year) & (GICS.Sector==input$sector) ) %>%
@@ -223,21 +218,76 @@ shinyServer(function(input, output){
 #filter(input$ratio>mean(input$ratio)-sd(input$ratio))
   
   output$boxplot <- renderPlotly({
-    plot_ly(data=graph_data_2(), x=~GICS.Sector,y=~input$ratio, color = ~GICS.Sector,text = ~Security, type = "box")
+    print(graph_data_2())
+    plot_ly(data=graph_data_2(), x=~GICS.Sector,y=~get(input$ratio), color =~GICS.Sector,type = "box") %>%
+      layout(xaxis = list(title = "Sector"), 
+             yaxis = list(title = as.character(input$ratio)))
   })
+  # 
+  # p <- plot_ly(ggplot2::diamonds, x = ~cut, y = ~price, color = ~clarity, type = "box") %>%
+  #   layout(boxmode = "group")
 
+#scatter plot
+  temp_data = reactive({
+    ratiotable2 %>%
+      select(Security,GICS.Sector,For.Year,input$ratio2,input$ratio) %>%
+      filter((For.Year==input$year) & (GICS.Sector==input$sector))
+    #& (Revenue<100) & (PE<50) & (PE>-10)
+  })
+  
+  output$display <- renderPlotly({
+    plot_ly(temp_data(), x = ~get(input$ratio2), y = ~get(input$ratio), color = ~GICS.Sector,text = ~Security, type = "scatter") %>%
+      layout(xaxis = list(title = as.character(input$ratio2)), 
+            yaxis = list(title = as.character(input$ratio)))
+  })
+  
+  
+#Over Year - Ratio
+  
+  mediantable<-aggregate(ratiotable2[,1:11],list(ratiotable2$GICS.Sector,ratiotable2$For.Year),median)
+  colnames(mediantable)[1:5] <-c("GICS.Sector","For.Year","PE","market_cap","Price")
+  mediantable$For.Year<-as.character(mediantable$For.Year)
+  
+  temp2_data = reactive({
+    mediantable %>%
+      select(GICS.Sector,For.Year,input$ratio11) %>%
+      filter(GICS.Sector==input$sector11) 
+  })
+  
+  output$lineplot1 <-renderPlotly({
+    plot_ly(temp2_data(), x=~For.Year, y=~get(input$ratio11), group=~GICS.Sector,
+            type="scatter",color=~GICS.Sector, mode="lines+markers")
+  })
+  
+  output$table11 <- renderTable({
+    temp2_data()
+  })
+  
+  #data table
+  datasetInput<- reactive({
+    data <- ratiotable2
+  if (input$sector1 != "All") {
+    data <- data[data$GICS.Sector == input$sector1,]
+  }
+  if (input$year1 != "All") {
+    data <- data[data$For.Year == input$year1,]
+  }
+    data
+  })
   
   # show data using DataTable
   output$table <- DT::renderDataTable(DT::datatable({
-    data <- ratiotable2
-    if (input$sector1 != "All") {
-      data <- data[data$GICS.Sector == input$sector1,]
-    }
-    if (input$year1 != "All") {
-      data <- data[data$For.Year == input$year1,]
-    }
-    data
-  },options = list(scrollX = TRUE)))
+    datasetInput()},options = list(scrollX = TRUE)))
   #formatStyle(input$year,input$sector, background="skyblue", fontWeight='bold')
 
+  #output for download button based on selection
+   output$downloadData <- downloadHandler(
+    filename = function() {
+     paste("dataset-sector-",input$sector1,"year-",input$year1, ".csv", sep="")
+    },
+    content = function(file) {
+     write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
+  
 })
