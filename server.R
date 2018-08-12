@@ -9,9 +9,9 @@ library(tidyr)
 library(reshape)
 library(Hmisc)
 
-stock_data <- fread("./stock_data.csv")
-fundamentals<-read.table("C:\\Users\\XuT\\Desktop\\DS\\shiny project data\\sp500\\fundamentals2.csv",head=TRUE,sep=",")
-new_securities<-read.table("C:\\Users\\XuT\\Desktop\\DS\\shiny project data\\sp500\\new_securities.csv",head=TRUE,sep=",")
+stock_data <- read.table("./stock_data.csv",head=TRUE,sep=",")
+fundamentals<-read.table("./fundamentals2.csv",head=TRUE,sep=",")
+new_securities<-read.table("./new_securities.csv",head=TRUE,sep=",")
 
 new_securities$For.Year = "Current"
   
@@ -107,6 +107,36 @@ shinyServer(function(input, output, session){
            Profit.Margin,
            R.and.D = R.and.D/1000000)
   
+  ratiotable1 = dplyr::select(selectedratiotable,
+                              PE,
+                              market_cap,
+                              Price,
+                              leverage,
+                              Total.Revenue,
+                              Total.Liabilities,
+                              Capital.Expenditures,
+                              Cash.and.Cash.Equivalents,
+                              Net.Cash.Flow.Operating,
+                              Net.Income,
+                              Profit.Margin,
+                              R.and.D,
+                              For.Year,
+                              GICS.Sector,
+                              Security)
+  
+  ratiotable2 = ratiotable1[ratiotable1[,1] > (mean(ratiotable1[,1])-sd(ratiotable1[,1])) & ratiotable1[,1] < (mean(ratiotable1[,1])+sd(ratiotable1[,1])) &
+                              ratiotable1[,2] > (mean(ratiotable1[,2])-sd(ratiotable1[,2])) & ratiotable1[,2] < (mean(ratiotable1[,2])+sd(ratiotable1[,2])) &
+                              ratiotable1[,3] > (mean(ratiotable1[,3])-sd(ratiotable1[,3])) & ratiotable1[,3] < (mean(ratiotable1[,3])+sd(ratiotable1[,3])) &
+                              ratiotable1[,4] > (mean(ratiotable1[,4])-sd(ratiotable1[,4])) & ratiotable1[,4] < (mean(ratiotable1[,4])+sd(ratiotable1[,4])) &
+                              ratiotable1[,5] > (mean(ratiotable1[,5])-sd(ratiotable1[,5])) & ratiotable1[,5] < (mean(ratiotable1[,5])+sd(ratiotable1[,5])) &
+                              ratiotable1[,6] > (mean(ratiotable1[,6])-sd(ratiotable1[,6])) & ratiotable1[,6] < (mean(ratiotable1[,6])+sd(ratiotable1[,6])) &
+                              ratiotable1[,7] > (mean(ratiotable1[,7])-sd(ratiotable1[,7])) & ratiotable1[,7] < (mean(ratiotable1[,7])+sd(ratiotable1[,7])) &
+                              ratiotable1[,8] > (mean(ratiotable1[,8])-sd(ratiotable1[,8])) & ratiotable1[,8] < (mean(ratiotable1[,8])+sd(ratiotable1[,8])) &
+                              ratiotable1[,9] > (mean(ratiotable1[,9])-sd(ratiotable1[,9])) & ratiotable1[,9] < (mean(ratiotable1[,9])+sd(ratiotable1[,9])) &
+                              ratiotable1[,10] > (mean(ratiotable1[,10])-sd(ratiotable1[,10])) & ratiotable1[,10] < (mean(ratiotable1[,10])+sd(ratiotable1[,10])) &
+                              ratiotable1[,11] > (mean(ratiotable1[,11])-sd(ratiotable1[,11])) & ratiotable1[,11] < (mean(ratiotable1[,11])+sd(ratiotable1[,11])),]
+  
+  
   corr_ratiotable = reactive({
     selectedratiotable %>%
       filter(GICS.Sector==input$option4) %>%
@@ -124,34 +154,6 @@ shinyServer(function(input, output, session){
            R.and.D)
   })
   
-  ratiotable1 = selectedratiotable %>%
-    select(PE,
-           market_cap,
-           Price,
-           leverage,
-           Total.Revenue,
-           Total.Liabilities,
-           Capital.Expenditures,
-           Cash.and.Cash.Equivalents,
-           Net.Cash.Flow.Operating,
-           Net.Income,
-           Profit.Margin,
-           R.and.D,
-           For.Year,
-           GICS.Sector,
-           Security)
-  
-  ratiotable2 = ratiotable1[ratiotable1[,1] > (mean(ratiotable1[,1])-sd(ratiotable1[,1])) & ratiotable1[,1] < (mean(ratiotable1[,1])+sd(ratiotable1[,1])) &
-                              ratiotable1[,2] > (mean(ratiotable1[,2])-sd(ratiotable1[,2])) & ratiotable1[,2] < (mean(ratiotable1[,2])+sd(ratiotable1[,2])) &
-                              ratiotable1[,3] > (mean(ratiotable1[,3])-sd(ratiotable1[,3])) & ratiotable1[,3] < (mean(ratiotable1[,3])+sd(ratiotable1[,3])) &
-                              ratiotable1[,4] > (mean(ratiotable1[,4])-sd(ratiotable1[,4])) & ratiotable1[,4] < (mean(ratiotable1[,4])+sd(ratiotable1[,4])) &
-                              ratiotable1[,5] > (mean(ratiotable1[,5])-sd(ratiotable1[,5])) & ratiotable1[,5] < (mean(ratiotable1[,5])+sd(ratiotable1[,5])) &
-                              ratiotable1[,6] > (mean(ratiotable1[,6])-sd(ratiotable1[,6])) & ratiotable1[,6] < (mean(ratiotable1[,6])+sd(ratiotable1[,6])) &
-                              ratiotable1[,7] > (mean(ratiotable1[,7])-sd(ratiotable1[,7])) & ratiotable1[,7] < (mean(ratiotable1[,7])+sd(ratiotable1[,7])) &
-                              ratiotable1[,8] > (mean(ratiotable1[,8])-sd(ratiotable1[,8])) & ratiotable1[,8] < (mean(ratiotable1[,8])+sd(ratiotable1[,8])) &
-                              ratiotable1[,9] > (mean(ratiotable1[,9])-sd(ratiotable1[,9])) & ratiotable1[,9] < (mean(ratiotable1[,9])+sd(ratiotable1[,9])) &
-                              ratiotable1[,10] > (mean(ratiotable1[,10])-sd(ratiotable1[,10])) & ratiotable1[,10] < (mean(ratiotable1[,10])+sd(ratiotable1[,10])) &
-                              ratiotable1[,11] > (mean(ratiotable1[,11])-sd(ratiotable1[,11])) & ratiotable1[,11] < (mean(ratiotable1[,11])+sd(ratiotable1[,11])),]
   
   
   name_corr = c("Z.PE","Z.market_cap","Z.Price","leverage","Total.Revenue","Total.Liabilities","Capital.Expenditures","Cash.and.Cash.Equivalents","Net.Cash.Flow.Operating","Net.Income","Profit.Margin","R.and.D")
@@ -192,7 +194,7 @@ shinyServer(function(input, output, session){
 
   
 
-  #box plot
+#box plot
 
   #remove outlier
   #remove_outliers <- function(x, na.rm = TRUE, ...) {
@@ -244,7 +246,7 @@ shinyServer(function(input, output, session){
   
 #Over Year - Ratio
   
-  mediantable<-aggregate(ratiotable2[,1:11],list(ratiotable2$GICS.Sector,ratiotable2$For.Year),median)
+  mediantable<-aggregate(ratiotable1[,1:11],list(ratiotable1$GICS.Sector,ratiotable1$For.Year),median)
   colnames(mediantable)[1:5] <-c("GICS.Sector","For.Year","PE","market_cap","Price")
   mediantable$For.Year<-as.character(mediantable$For.Year)
   
@@ -265,7 +267,7 @@ shinyServer(function(input, output, session){
   
   #data table
   datasetInput<- reactive({
-    data <- ratiotable2
+    data <- ratiotable1
   if (input$sector1 != "All") {
     data <- data[data$GICS.Sector == input$sector1,]
   }

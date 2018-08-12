@@ -3,9 +3,9 @@ library(data.table)
 library(plotly)
 library(shinydashboard)
 
-stock_data <- fread("./stock_data.csv")
-fundamentals<-read.table("C:\\Users\\XuT\\Desktop\\DS\\shiny project data\\sp500\\fundamentals2.csv",head=TRUE,sep=",")
-new_securities<-read.table("C:\\Users\\XuT\\Desktop\\DS\\shiny project data\\sp500\\new_securities.csv",head=TRUE,sep=",")
+stock_data <- read.table("./stock_data.csv",head=TRUE,sep=",")
+fundamentals<-read.table("./fundamentals2.csv",head=TRUE,sep=",")
+new_securities<-read.table("./new_securities.csv",head=TRUE,sep=",")
 
 
 dashboardPage(
@@ -64,7 +64,7 @@ dashboardPage(
                                     selectizeInput(inputId = "option3",
                                                    label = "Choose Year",
                                                    choices = c(2012,2013,2014,2015,2016), multiple=FALSE,
-                                                   selected = 2016)
+                                                   selected = 2015)
                              )
                              
                            ),
@@ -82,7 +82,7 @@ dashboardPage(
                 column(6,
                        selectizeInput(inputId = "option4",
                                       label = "Select Sector",
-                                      choices = unique(stock_data[, GICS.Sector]), multiple=FALSE,
+                                      choices = unique(as.character(stock_data$GICS.Sector)), multiple=FALSE,
                                       selected = 'Health Care')
                 )),
               fluidRow(column(12,
@@ -183,7 +183,7 @@ dashboardPage(
                        selectInput("year1",
                                    "Year:",
                                    c("All",
-                                     c(2013,2014,2015,2016)))
+                                     c(2012,2013,2014,2015,2016)))
                 ),
                 column(4,
                        downloadButton("downloadData", "Download")
