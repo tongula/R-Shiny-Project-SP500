@@ -8,6 +8,9 @@ library(gridExtra)
 library(tidyr)
 library(reshape)
 library(Hmisc)
+library(circlepackeR)
+library(data.tree)
+library(treemap)
 
 stock_data <- read.table("./stock_data.csv",head=TRUE,sep=",")
 fundamentals<-read.table("./fundamentals2.csv",head=TRUE,sep=",")
@@ -77,7 +80,7 @@ shinyServer(function(input, output, session){
   
  
   
-  #display map
+  #display Pie map
   output$display1 <- renderPlotly({
     plot_ly(data=counttable_geo(), values = ~count,text = ~get(input$option1),type = "pie")%>%
       layout(title = 'S&P Stock Count Pie Chart',
@@ -92,6 +95,27 @@ shinyServer(function(input, output, session){
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
   })
   
+  
+  #Circle Graph
+  
+  output$circle1 <- renderCirclepackeR({
+    
+    summary_data<-new_securities %>% 
+      group_by(GICS.Sector,GICS.Sub.Industry) %>%
+      summarise(population=n())
+    
+    summary_data$pathString <- paste("world", 
+                                     summary_data$GICS.Sector, 
+                                     summary_data$GICS.Sub.Industry, 
+                                     sep = "/")
+    
+    population <- as.Node(summary_data)
+    
+    circlepackeR(population, size = "population", color_min = "hsl(56,80%,80%)", 
+               color_max = "hsl(341,30%,40%)")                       
+  
+  })
+
   #Process and select ratio for analysis
   fundamentals$market_cap = fundamentals$Price*fundamentals$Estimated.Shares.Outstanding
   fundamentals$leverage = fundamentals$Total.Liabilities/fundamentals$Total.Assets

@@ -2,6 +2,9 @@ library(shiny)
 library(data.table)
 library(plotly)
 library(shinydashboard)
+library(circlepackeR)
+library(data.tree)
+library(treemap)
 
 stock_data <- read.table("./stock_data.csv",head=TRUE,sep=",")
 fundamentals<-read.table("./fundamentals2.csv",head=TRUE,sep=",")
@@ -71,6 +74,12 @@ dashboardPage(
                            
                            fluidRow(
                              column(12,plotlyOutput("display3"), height = 400)
+                           )
+                  ),
+                  tabPanel("Sector Structure",
+                           fluidRow(
+                             column(12,circlepackeROutput("circle1", width = "100%", height = "400px"), height = 400)
+                             
                            )
                   )
                 )
