@@ -15,7 +15,7 @@ dashboardPage(
   dashboardHeader(title = "S&P 500 Fundemantal Analysis"),
   dashboardSidebar(
     
-    sidebarUserPanel("Tong Xu"),
+    sidebarUserPanel("Tracey Xu"),
                      #image = "https://yt3.ggpht.com/-04uuTMHfDz4/AAAAAAAAAAI/AAAAAAAAAAA/Kjeupp-eNNg/s100-c-k-no-rj-c0xffffff/photo.jpg"),
     sidebarMenu(
       menuItem("Stock", tabName = "stock", icon = icon("dollar")),
@@ -37,7 +37,13 @@ dashboardPage(
               fluidRow(
                 tabBox(
                   title = "Stock",
-                  id = "tabset1", height = "220px", width = "12",
+                  id = "tabset1", height = "12", width = "12", #220px
+                  tabPanel("Sector Structure",
+                           fluidRow(
+                             column(12, div(style ="height: 100px; position: relative"), circlepackeROutput("circle1", width = "100%", height = "800px"), height = 400)
+                             
+                           )
+                  ),
                   tabPanel("Stock Summary",
                            fluidRow(
                              column(6,
@@ -74,12 +80,6 @@ dashboardPage(
                            
                            fluidRow(
                              column(12,plotlyOutput("display3"), height = 400)
-                           )
-                  ),
-                  tabPanel("Sector Structure",
-                           fluidRow(
-                             column(12,circlepackeROutput("circle1", width = "100%", height = "400px"), height = 400)
-                             
                            )
                   )
                 )
@@ -139,7 +139,6 @@ dashboardPage(
                                                multiple=FALSE,
                                                selected = 'PE')
                          )),
-                       
                        fluidRow(plotlyOutput("display"), width = 12)
                        ),
               tabPanel("Summary",
@@ -158,9 +157,9 @@ dashboardPage(
                                                selected = 'Health Care')
                          )),
                        
-                       fluidRow(plotlyOutput("lineplot1"), width = 12)),
+                       fluidRow(plotlyOutput("lineplot1"), width = 12),
                        fluidRow(tableOutput("table11"), width = 12))
-                       
+                )
                       #  fluidRow(
                       #    column(4,
                       #           selectizeInput(inputId = "sector22",
