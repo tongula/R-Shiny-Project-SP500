@@ -1,3 +1,5 @@
+#devtools::install_github("jeromefroe/circlepackeR") #install circlepackeR from Github
+
 library(ggplot2)
 library(plotly)
 library(data.table)
@@ -78,7 +80,6 @@ shinyServer(function(input, output, session){
   })
             
   
- 
   
   #display Pie map
   output$display1 <- renderPlotly({
@@ -277,7 +278,7 @@ shinyServer(function(input, output, session){
   temp2_data = reactive({
     mediantable %>%
       select(GICS.Sector,For.Year,input$ratio11) %>%
-      filter(GICS.Sector==input$sector11) 
+      filter(GICS.Sector %in% input$sector11) 
   })
   
   output$lineplot1 <-renderPlotly({
